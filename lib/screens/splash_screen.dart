@@ -1,9 +1,9 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stock_management/screens/home_screen.dart';
 import 'package:stock_management/screens/login_screen.dart';
+
+import '../utilities/fingerprint_api.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -24,13 +24,17 @@ class _SplashScreenState extends State<SplashScreen> {
     final String? name = prefs.getString('name');
     final bool? isloggedin = prefs.getBool('isloggedin');
     if (isloggedin != null && isloggedin == true) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              HomeScreen(email: email.toString(), name: name.toString()),
-        ),
-      );
+      final isAuthenticated = await LocalAuthApi.authenticate();
+
+      if (isAuthenticated) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                HomeScreen(email: email.toString(), name: name.toString()),
+          ),
+        );
+      }
     } else {
       Navigator.pushReplacement(
         context,
