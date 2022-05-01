@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:stock_management/screens/login_screen.dart';
+import 'package:stock_management/bloc/statemanagement_bloc.dart';
+import 'package:stock_management/screens/add_item.dart';
+import 'package:stock_management/screens/profile-screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String email;
@@ -38,37 +40,85 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home Screen'),
+        backgroundColor: Colors.red,
+        title: Text(
+          'Hello ${widget.name} !!',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Center(
-            child: Text(widget.email),
-          ),
-          SizedBox(height: 10.0),
-          Center(
-            child: Text(widget.name),
-          ),
-          Center(
-            child: ElevatedButton(
-                onPressed: () async {
-                  await GoogleSignIn().signOut();
-                  await auth.signOut();
-                  SharedPreferences preferences =
-                      await SharedPreferences.getInstance();
-                  await preferences.clear();
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) {
-                      return LoginScreen();
-                    }),
-                    ModalRoute.withName('/'),
+      body: BlocBuilder<StatemanagementBloc, StatemanagementState>(
+          builder: (context, state) {
+        if (state is LoadDatastate) {
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ListView.separated(
+                itemBuilder: (_, i) {
+                  final items = state.items[i];
+                  return ListTile(
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Text('${items.name}'),
+                        Text('${items.description}'),
+                        Text('${items.quantity}'),
+                      ],
+                    ),
                   );
                 },
-                child: Text('Logout')),
+                separatorBuilder: (_, i) {
+                  return Divider();
+                },
+                itemCount: state.items.length),
+          );
+        } else {
+          return ListView.separated(
+              itemBuilder: (_, i) {
+                return ListTile(
+                  title: Row(children: [Text('No Data')]),
+                );
+              },
+              separatorBuilder: (_, i) {
+                return Divider();
+              },
+              itemCount: 1);
+        }
+      }),
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.red,
+        child: Padding(
+          padding: const EdgeInsets.only(right: 10.0, left: 10.0, bottom: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                iconSize: 30.0,
+                onPressed: () {},
+                icon: Icon(Icons.home),
+                color: Colors.white,
+              ),
+              IconButton(
+                iconSize: 30.0,
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) {
+                    return AddItem(name: widget.name, email: widget.email);
+                  }));
+                },
+                icon: Icon(Icons.add),
+                color: Colors.white,
+              ),
+              IconButton(
+                iconSize: 30.0,
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) {
+                    return ProfileScreen();
+                  }));
+                },
+                icon: Icon(Icons.person),
+                color: Colors.white,
+              )
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

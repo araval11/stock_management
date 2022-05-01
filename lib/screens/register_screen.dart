@@ -1,6 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:stock_management/screens/login_screen.dart';
+import 'package:stock_management/screens/home_screen.dart';
 
 import '../components/round_button.dart';
 import '../utilities/constants.dart';
@@ -12,8 +13,12 @@ class RegistrationScreen extends StatefulWidget {
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
   final _auth = FirebaseAuth.instance;
+  late String fullname;
+  late String contact;
   late String email;
   late String password;
+  bool showSpinner = false;
+  final _firestore = FirebaseFirestore.instance;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,6 +40,28 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
                 SizedBox(
                   height: 16.0,
+                ),
+                TextField(
+                  textAlign: TextAlign.center,
+                  onChanged: (value) {
+                    fullname = value;
+                  },
+                  decoration: ktextfielddecoration.copyWith(
+                      hintText: 'Enter Your Full Name'),
+                ),
+                SizedBox(
+                  height: 8.0,
+                ),
+                TextField(
+                  textAlign: TextAlign.center,
+                  onChanged: (value) {
+                    contact = value;
+                  },
+                  decoration: ktextfielddecoration.copyWith(
+                      hintText: 'Enter Your Contact Number'),
+                ),
+                SizedBox(
+                  height: 8.0,
                 ),
                 TextField(
                   keyboardType: TextInputType.emailAddress,
@@ -64,15 +91,23 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   colour: Colors.lightBlueAccent,
                   title: 'Register',
                   onTap: () async {
+                    setState(() {
+                      showSpinner = true;
+                    });
                     try {
                       final newuser =
                           await _auth.createUserWithEmailAndPassword(
                               email: email, password: password);
+                      _firestore.collection('profile').add({
+                        'fullname': fullname,
+                        'contact': contact,
+                        'email': email,
+                      });
                       if (newuser != null) {
                         Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(builder: (_) {
-                            return LoginScreen();
+                            return HomeScreen(email: email, name: fullname);
                           }),
                           ModalRoute.withName('/'),
                         );
@@ -85,6 +120,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               ],
             ),
           ),
+          if (showSpinner)
+            Center(
+              child: CircularProgressIndicator(
+                color: Colors.amber,
+              ),
+            )
         ],
       ),
     );
