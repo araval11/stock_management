@@ -5,8 +5,9 @@ import 'package:stock_management/bloc/statemanagement_bloc.dart';
 import 'package:stock_management/screens/splash_screen.dart';
 
 void main() async {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -15,31 +16,40 @@ class _LoginScreenState extends State<LoginScreen> {
   GoogleSignInAccount? user;
   GoogleSignInAuthentication? googleauth;
   final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
   late String email;
   late String password;
+  String name = 'no name';
   bool showSpinner = false;
 
   void authentication() async {
     try {
-      final user = await _auth.signInWithEmailAndPassword(
-          email: email, password: password);
-      if (user != null) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) {
-            return HomeScreen(
-              email: email,
-              name: password,
-            );
-          }),
-          ModalRoute.withName('/'),
-        );
-      } else {
-        Navigator.push(context, MaterialPageRoute(builder: (_) {
-          return LoginScreen();
-        }));
-      }
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      await _firestore
+          .collection('profile')
+          .get()
+          .then((QuerySnapshot snapshot) {
+        snapshot.docs.forEach((f) {
+          String namedata = f['fullname'];
+          String emaildata = f['email'];
+          if (email == emaildata) {
+            name = namedata;
+          }
+        });
+      });
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) {
+          return HomeScreen(
+            email: email,
+            name: name,
+          );
+        }),
+        ModalRoute.withName('/'),
+      );
     } catch (e) {
+      showSpinner = false;
       final snackBar = SnackBar(
         content: const Text('You had entered wrong credentials!!'),
         action: SnackBarAction(
@@ -111,6 +121,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   RoundButton(
                     colour: Colors.grey,
                     onTap: () async {
+                      setState(() {
+                        showSpinner = true;
+                      });
                       user = await GoogleSignIn().signIn();
                       googleauth = await user!.authentication;
                       final OAuthCredential googlecredential =
@@ -122,7 +135,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           (await _auth.signInWithCredential(googlecredential))
                               .user;
                       email = user!.email.toString();
-
+                      setState(() {
+                        showSpinner = true;
+                      });
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(builder: (_) {

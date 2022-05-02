@@ -47,7 +47,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             contact = 'you need to register your contact';
           }
           return Scaffold(
-            appBar: AppBar(title: Text('ProfileScreen')),
+            appBar: AppBar(
+                backgroundColor: Colors.blueGrey, title: Text('ProfileScreen')),
             body: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -66,6 +67,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           fontSize: 20.0, fontWeight: FontWeight.bold)),
                   Center(
                     child: ElevatedButton(
+                        style:
+                            ElevatedButton.styleFrom(primary: Colors.blueGrey),
                         onPressed: () async {
                           await GoogleSignIn().signOut();
                           await auth.signOut();

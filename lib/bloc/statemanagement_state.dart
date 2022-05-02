@@ -9,10 +9,6 @@ abstract class StatemanagementState extends Equatable {
 
 class Initialstate extends StatemanagementState {}
 
-class LoadDatastate extends StatemanagementState {
-  final List<Item> items;
-
-  LoadDatastate({required this.items});
-}
+class LoadDatastate extends StatemanagementState {}
 
 class Transactionstate extends StatemanagementState {}
