@@ -107,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         hintText: 'Enter your Password'),
                   ),
                   RoundButton(
-                      colour: Colors.blue,
+                      colour: Colors.blueGrey,
                       onTap: () {
                         setState(() {
                           showSpinner = true;
@@ -152,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     title: 'Google SignIn',
                   ),
                   RoundButton(
-                      colour: Colors.blue,
+                      colour: Colors.blueGrey,
                       onTap: () {
                         Navigator.push(
                             context,
