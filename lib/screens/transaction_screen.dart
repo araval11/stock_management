@@ -24,31 +24,44 @@ class TransactionScreen extends StatelessWidget {
               return ListView(
                   children:
                       snapshot.data!.docs.map((DocumentSnapshot document) {
+                var doc_id = document.id;
                 Map<String, dynamic> data =
                     document.data()! as Map<String, dynamic>;
-                return ListTile(
-                  title: Row(
-                    children: [
-                      Text('${data['quantity']}'),
-                      Spacer(),
-                      Text(
-                        '${data['out']}',
-                        style: TextStyle(
-                            fontSize: 30.0, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Item_Name : ${data['itemname']}'),
-                      SizedBox(height: 10.0),
-                      Text('${data['timestamp'].toDate()}'),
-                      SizedBox(height: 10.0),
-                      Divider(
-                        thickness: 2,
-                      )
-                    ],
+                return InkWell(
+                  onLongPress: () async {
+                    await FirebaseFirestore.instance
+                        .collection('transactions')
+                        .doc(doc_id)
+                        .delete();
+                  },
+                  child: ListTile(
+                    title: Row(
+                      children: [
+                        Text(
+                          '${data['quantity']}',
+                          style: TextStyle(
+                              fontSize: 25.0, fontWeight: FontWeight.bold),
+                        ),
+                        Spacer(),
+                        Text(
+                          '${data['out']}',
+                          style: TextStyle(
+                              fontSize: 30.0, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Item_Name : ${data['itemname']}'),
+                        SizedBox(height: 10.0),
+                        Text('${data['timestamp'].toDate()}'),
+                        SizedBox(height: 10.0),
+                        Divider(
+                          thickness: 2,
+                        )
+                      ],
+                    ),
                   ),
                 );
               }).toList());

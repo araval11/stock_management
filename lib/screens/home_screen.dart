@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:stock_management/components/round_button.dart';
 import 'package:stock_management/models/items.dart';
 import 'package:stock_management/screens/add_item.dart';
+import 'package:stock_management/screens/low_stock_screen.dart';
 import 'package:stock_management/screens/profile-screen.dart';
 import 'package:stock_management/screens/transaction_screen.dart';
 import 'package:stock_management/utilities/constants.dart';
@@ -84,6 +85,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(width: 20.0),
                   Expanded(
                     child: InkWell(
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) {
+                          return LowStockScreen();
+                        }));
+                      },
                       child: Container(
                         decoration: BoxDecoration(
                             color: Colors.blueGrey,
@@ -147,6 +153,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       Map<String, dynamic> data =
                           document.data()! as Map<String, dynamic>;
                       return InkWell(
+                        onLongPress: () async {
+                          await FirebaseFirestore.instance
+                              .collection('item')
+                              .doc(doc_id)
+                              .delete();
+                        },
                         onTap: () {
                           showModalBottomSheet(
                               context: context,
@@ -201,8 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             textAlign: TextAlign.center,
                                             decoration:
                                                 ktextfielddecoration.copyWith(
-                                                    hintText:
-                                                        'Update Qunatity'),
+                                                    hintText: 'Sell Product'),
                                             onChanged: (value) {
                                               quantity = value;
                                             },
@@ -218,9 +229,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                               await FirebaseFirestore.instance
                                                   .collection('item')
                                                   .doc(doc_id)
-                                                  .update(
-                                                      {'quantity': quantity});
-                                              await FirebaseFirestore.instance
+                                                  .update({
+                                                'quantity': (int.parse(
+                                                            data['quantity']) -
+                                                        int.parse(quantity))
+                                                    .toString()
+                                              });
+                                              FirebaseFirestore.instance
                                                   .collection('transactions')
                                                   .add({
                                                 'timestamp': DateTime.now(),
@@ -228,10 +243,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 'out': 'OUT',
                                                 'itemname': data['itemname']
                                               });
-
+                                              if (int.parse(data['quantity']) <=
+                                                  int.parse(data['lowstock'])) {
+                                                FirebaseFirestore.instance
+                                                    .collection('lowstock')
+                                                    .add({
+                                                  'itemname': data['itemname'],
+                                                  'quantity': data['quantity']
+                                                });
+                                              }
                                               Navigator.pop(context);
                                             },
-                                            title: 'Update')
+                                            title: 'Sell')
                                       ],
                                     ),
                                   ),
@@ -284,7 +307,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 iconSize: 30.0,
                 onPressed: () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) {
-                    return AddItem();
+                    return AddItem(
+                      itemname: 'Select Item',
+                      description: 'Description',
+                      docid: '',
+                    );
                   }));
                 },
                 icon: Icon(Icons.add),
