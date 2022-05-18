@@ -24,9 +24,17 @@ class LowStockScreen extends StatelessWidget {
                   children:
                       snapshot.data!.docs.map((DocumentSnapshot document) {
                 var doc_id = document.id;
+
                 Map<String, dynamic> data =
                     document.data()! as Map<String, dynamic>;
+
                 return InkWell(
+                  onLongPress: () async {
+                    await FirebaseFirestore.instance
+                        .collection('lowstock')
+                        .doc(doc_id)
+                        .delete();
+                  },
                   child: ListTile(
                     title: Text('Item_Name : ${data['itemname']}'),
                     subtitle: Text('Item_Name : ${data['quantity']}'),

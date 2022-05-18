@@ -146,12 +146,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                   }
+
                   return ListView(
                     children:
                         snapshot.data!.docs.map((DocumentSnapshot document) {
                       var doc_id = document.id;
                       Map<String, dynamic> data =
                           document.data()! as Map<String, dynamic>;
+
+                      if (int.parse(data['quantity']) <=
+                          int.parse(data['lowstock'])) {
+                        FirebaseFirestore.instance.collection('lowstock').add({
+                          'itemname': data['itemname'],
+                          'quantity': data['quantity']
+                        });
+                      }
                       return InkWell(
                         onLongPress: () async {
                           await FirebaseFirestore.instance
@@ -243,15 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 'out': 'OUT',
                                                 'itemname': data['itemname']
                                               });
-                                              if (int.parse(data['quantity']) <=
-                                                  int.parse(data['lowstock'])) {
-                                                FirebaseFirestore.instance
-                                                    .collection('lowstock')
-                                                    .add({
-                                                  'itemname': data['itemname'],
-                                                  'quantity': data['quantity']
-                                                });
-                                              }
+
                                               Navigator.pop(context);
                                             },
                                             title: 'Sell')
